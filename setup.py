@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/env python3
 # python3 setup.py sdist bdist_wheel
 """
 @File    :   setup.py.py    
@@ -11,12 +10,6 @@
 9/6/21 5:16 PM   Haohe Liu      1.0         None
 """
 
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Note: To use the 'upload' functionality of this file, you must:
-#   $ pipenv install twine --dev
-
 import io
 import os
 import sys
@@ -25,33 +18,33 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = "audiosr"
-DESCRIPTION = "This package is written for text-to-audio/music generation."
-URL = "https://github.com/haoheliu/audiosr"
+NAME = "audio-sr"
+DESCRIPTION = "This package performs Audio Super Resolution."
+URL = "https://github.com/RubisetCie/audio-sr-versatile"
 EMAIL = "haoheliu@gmail.com"
 AUTHOR = "Haohe Liu"
-REQUIRES_PYTHON = ">=3.7.0"
-VERSION = "0.0.7"
+REQUIRES_PYTHON = ">=3.12.0"
+VERSION = "1.0.0"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "torch>=1.13.0",
-    "torchaudio>=0.13.0",
-    "torchvision>=0.14.0",
+    "torch>=2.6.0",
+    "torchaudio>=2.6.0",
+    "torchvision>=0.21.0",
     "tqdm",
     "gradio",
     "pyyaml",
     "einops",
     "chardet",
-    "numpy<=1.23.5",
+    "numpy",
     "soundfile",
-    "librosa==0.9.2",
+    "librose",
     "scipy",
     "pandas",
     "unidecode",
     "phonemizer",
-    "torchlibrosa>=0.0.9",
-    "transformers==4.30.2",
+    "torchlibrosa>=0.1.0",
+    "transformers==4.49.0",
     "huggingface_hub",
     "progressbar",
     "ftfy",
@@ -150,7 +143,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
