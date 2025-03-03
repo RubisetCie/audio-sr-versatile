@@ -34,7 +34,6 @@ def match_array_shapes(array_1:np.ndarray, array_2:np.ndarray):
             array_1 = np.pad(array_1, ((0,0), (0,padding)), 'constant', constant_values=0)
     return array_1
 
-
 def lr_filter(audio, cutoff, filter_type, order=12, sr=48000):
     audio = audio.T
     nyquist = 0.5 * sr
@@ -51,27 +50,25 @@ class Predictor(BasePredictor):
         self.sr = 48000
         print("Loading Model...")
         self.audiosr = build_model(model_name=self.model_name, device=self.device)
-        # print(self.audiosr)
-        # exit()
         print("Model loaded!")
 
     def process_audio(self, input_file, chunk_size=5.12, overlap=0.1, seed=None, guidance_scale=3.5, ddim_steps=50):
         audio, sr = librosa.load(input_file, sr=input_cutoff * 2, mono=False)
         audio = audio.T
         sr = input_cutoff * 2
-        print(f"audio.shape = {audio.shape}")
-        print(f"input cutoff = {input_cutoff}")
-        
+        print(f"Input cutoff: {input_cutoff}")
+        print(f"Audio shape: {audio.shape}")
+
         is_stereo = len(audio.shape) == 2
         audio_channels = [audio] if not is_stereo else [audio[:, 0], audio[:, 1]]
-        print("audio is stereo" if is_stereo else "Audio is mono")
+        print("Audio is stereo" if is_stereo else "Audio is mono")
 
         chunk_samples = int(chunk_size * sr)
         overlap_samples = int(overlap * chunk_samples)
         output_chunk_samples = int(chunk_size * self.sr)
         output_overlap_samples = int(overlap * output_chunk_samples)
         enable_overlap = overlap > 0
-        print(f"enable_overlap = {enable_overlap}")
+        print(f"Enable overlap: {enable_overlap}")
         
         def process_chunks(audio):
             chunks = []
@@ -97,7 +94,7 @@ class Predictor(BasePredictor):
 
         meter_before = pyln.Meter(sr)
         meter_after = pyln.Meter(self.sr)
-        
+
         # Process chunks for each channel
         for ch_idx, (chunks, original_lengths) in enumerate(chunks_per_channel):
             for i, chunk in enumerate(chunks):
@@ -105,7 +102,7 @@ class Predictor(BasePredictor):
                 print(f"Processing chunk {i+1} of {len(chunks)} for {'Left/Mono' if ch_idx == 0 else 'Right'} channel")
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as temp_wav:
                     sf.write(temp_wav.name, chunk, sr)
-                
+
                     out_chunk = super_resolution(
                         self.audiosr,
                         temp_wav.name,
@@ -149,7 +146,6 @@ class Predictor(BasePredictor):
             output = low + high
         else:
             output = reconstructed_audio[0]
-        # print(output, type(output))
         return output
 
 
@@ -165,12 +161,12 @@ class Predictor(BasePredictor):
         if seed == 0:
             seed = random.randint(0, 2**32 - 1)
         print(f"Setting seed to: {seed}")
-        print(f"overlap = {overlap}")
-        print(f"guidance_scale = {guidance_scale}")
-        print(f"ddim_steps = {ddim_steps}")
-        print(f"chunk_size = {chunk_size}")
-        print(f"multiband_ensemble = {multiband_ensemble}")
-        print(f"input file = {os.path.basename(input_file)}")
+        print(f"Overlap: {overlap}")
+        print(f"Guidance scale: {guidance_scale}")
+        print(f"DDIM steps: {ddim_steps}")
+        print(f"Chunk size: {chunk_size}")
+        print(f"Multiband ensemble: {multiband_ensemble}")
+        print(f"Input file: {os.path.basename(input_file)}")
         os.makedirs(output_folder, exist_ok=True)
         waveform = self.process_audio(
             input_file,
@@ -180,10 +176,10 @@ class Predictor(BasePredictor):
             guidance_scale=guidance_scale,
             ddim_steps=ddim_steps
         )
-        
+
         filename = os.path.splitext(os.path.basename(input_file))[0]
-        sf.write(f"{output_folder}/SR_{filename}.wav", data=waveform, samplerate=48000,  subtype="PCM_16")
-        print(f"file created: {output_folder}/SR_{filename}.wav")
+        sf.write(f"{output_folder}/SR_{filename}.wav", data=waveform, samplerate=48000, subtype="PCM_16")
+        print(f"File created: {output_folder}/SR_{filename}.wav")
         del self.audiosr, waveform
         gc.collect()
         torch.cuda.empty_cache()
@@ -192,11 +188,11 @@ class Predictor(BasePredictor):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Find volume difference of two audio files.")
-    parser.add_argument("--input", help="Path to input audio file")
-    parser.add_argument("--output", help="Output folder")
+    parser.add_argument("--input", help="Path to input audio file", required=True)
+    parser.add_argument("--output", help="Output folder", required=True)
     parser.add_argument("--ddim_steps", help="Number of ddim steps", type=int, required=False, default=50)
     parser.add_argument("--chunk_size", help="chunk size", type=float, required=False, default=10.24)
-    parser.add_argument("--guidance_scale", help="Guidance scale value",  type=float, required=False, default=3.5)
+    parser.add_argument("--guidance_scale", help="Guidance scale value", type=float, required=False, default=3.5)
     parser.add_argument("--seed", help="Seed value, 0 = random seed", type=int, required=False, default=0)
     parser.add_argument("--overlap", help="overlap value", type=float, required=False, default=0.04)
     parser.add_argument("--multiband_ensemble", type=bool, help="Use multiband ensemble with input")
@@ -217,9 +213,7 @@ if __name__ == "__main__":
     crossover_freq = input_cutoff - 1000
 
     p = Predictor()
-    
     p.setup(device='auto')
-
 
     out = p.predict(
         input_file_path,
